@@ -23,20 +23,25 @@ class AlgebraicStructures:
             scale = floor(90/max(self.coordinates))
             p = Point.mul(self, scale)
             graph.create_oval(100 + p.coordinates[0], 100 - p.coordinates[1],  102 + p.coordinates[0], 102 - p.coordinates[1], fill="red")
-        if type(self) == Space:
+        if (type(self) == Space) or (type(self) == Equation) or (type(self) == Function):
             assert(self.dimensions == 2)
             graph.create_line(100, 0, 100, 200)
             graph.create_line(0, 100, 200, 100)
             scale = 200 # an arbitrarily large value
             for x in self.graphobjs:
-                if floor(100/max([abs(x) for x in x.coordinates])) < scale:
-                    scale = floor(100/max([abs(x) for x in x.coordinates]))
+                try:
+                    if floor(100/max([abs(x) for x in x.coordinates])) < scale:
+                        scale = floor(100/max([abs(x) for x in x.coordinates]))
+                except:
+                    continue
             for x in self.graphobjs:
                 v = Vector.mul(x, scale)
                 if type(x) == Vector:
                     graph.create_line(100, 100, 100 + v.coordinates[0], 100 - v.coordinates[1], fill="red")
                 elif type(x) == Point:
                     graph.create_oval(100 + v.coordinates[0], 100 - v.coordinates[1],  102 + v.coordinates[0], 102 - v.coordinates[1], fill="red")
+        else:
+            raise NotImplementedError 
         mainloop()
 
 class Vector(AlgebraicStructures):
@@ -100,9 +105,20 @@ class Space(AlgebraicStructures):
     def transform(self, mat):
         pass
 
+class Equation(Space):
+    def __init__(self, f, area=Vector([10, 10])):
+        super().__init__()
+        for x in range(-area.coordinates[0], area.coordinates[0]):
+            for y in range(-area.coordinates[1], area.coordinates[1]):
+                if f(x) == y:
+                    self.plotPoint(Point([x, y]))
+
+class Function(Equation):
+    def __init__(self, f, amount=10):
+        super().super().__init__()
+        for x in range(-amount, amount):
+            self.plotPoint(Point([x, f(x)]))
+
 if __name__ == "__main__":
-    s = Space()
-    f = lambda x: 2 * x + 3
-    for x in range(-5, 5):
-        s.plotPoint(Point([x, f(x)]))
+    s = Equation(lambda x: 2 * x + 3)
     s.visualize()
